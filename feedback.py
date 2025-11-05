@@ -74,11 +74,19 @@ llm = get_llm()
 # ============================================================================
 def read_csv(file_content: bytes) -> pd.DataFrame:
     try:
-        df = pd.read_csv(io.BytesIO(file_content))
-        return df
+        # Try UTF-8 first
+        return pd.read_csv(io.BytesIO(file_content))
+    except UnicodeDecodeError:
+        # Retry with fallback encodings
+        try:
+            return pd.read_csv(io.BytesIO(file_content), encoding="latin1")
+        except Exception as e:
+            st.error(f"Error reading CSV: {str(e)}")
+            return None
     except Exception as e:
         st.error(f"Error reading CSV: {str(e)}")
         return None
+
 
 
 
@@ -537,4 +545,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
